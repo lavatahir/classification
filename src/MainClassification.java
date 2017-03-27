@@ -1,3 +1,5 @@
+package src;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,11 +10,11 @@ import java.util.List;
 import java.util.Random;
 
 public class MainClassification {
-	public static int numOfClasses = 2;
-	public static int numofFeatures = 5;
+	public static int numOfClasses = 4;
+	public static int numofFeatures = 10;
 	private static final String FILENAME = "classificationData.txt";
 	public static List<State> classes;
-	private static int totalDataNum = 3;
+	private static int totalDataNum = 2000;
 	public static int numOFCrossValidationFold = 5;
 	
 	private static String sampleType = "binary";
@@ -91,17 +93,17 @@ public class MainClassification {
 		BufferedWriter bw = new BufferedWriter(fw);
 
 		//bayesian
-//		generateRandomSamplesForClasses("", "artificialDataSets.txt");
-//		bw.close();
-//		fw.close();
-//		TrainingAndTestingClassification tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
-//				totalDataNum, numOFCrossValidationFold, numofFeatures);
-//		
-//		 fw = new FileWriter("bayesianClassification.txt");
-//		 bw = new BufferedWriter(fw);
-//		tr.performTrainingAndTesting(bw, "bayesian");
-//		bw.close();
-//		fw.close();
+		generateRandomSamplesForClasses("", "artificialDataSets.txt");
+		bw.close();
+		fw.close();
+		TrainingAndTestingClassification tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
+				totalDataNum, numOFCrossValidationFold, numofFeatures);
+		
+		 fw = new FileWriter("bayesianClassification.txt");
+		 bw = new BufferedWriter(fw);
+		tr.performTrainingAndTesting(bw, "bayesian");
+		bw.close();
+		fw.close();
 		
 		
 		//dependence tree

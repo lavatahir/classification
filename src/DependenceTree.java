@@ -1,3 +1,5 @@
+package src;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,16 +48,27 @@ public class DependenceTree {
 
 		List<GraphicEdge> newEdges = new ArrayList<>();
 		List<GraphicEdge> neighBoringEdges = new ArrayList<>(edges);
+		Set<GraphicNode> visitedNodes = new LinkedHashSet<>();
 
 		while (newEdges.size() < nodes.size() - 1) {
 			Collections.sort(neighBoringEdges, (o1, o2) -> Double.compare(o2.getWeight(), o1.getWeight()));
+			System.out.println(neighBoringEdges.size());
 			newEdges.add(neighBoringEdges.get(0));
-			neighBoringEdges = getNeighBoringEdge(neighBoringEdges.get(0), newEdges);
+			visitedNodes = addNodeToVisitedNodes(neighBoringEdges.get(0), visitedNodes);
+			neighBoringEdges = getNeighBoringEdge(neighBoringEdges.get(0), newEdges, visitedNodes);
 		}
 		
 		buildTree(newEdges);
 	}
 	
+	private Set<GraphicNode> addNodeToVisitedNodes(GraphicEdge edge, Set<GraphicNode> visitedNodes) {
+		if(!visitedNodes.contains(edge.getNode1()))
+			visitedNodes.add(edge.getNode1());
+		if(!visitedNodes.contains(edge.getNode2()))
+			visitedNodes.add(edge.getNode2());
+		
+		return visitedNodes;
+	}
 	private void buildTree(List<GraphicEdge> newEdges) {
 		edges = new ArrayList<>(newEdges);
 		
@@ -69,30 +82,20 @@ public class DependenceTree {
 		}
 	}
 
-	private List<GraphicEdge> getNeighBoringEdge(GraphicEdge e, List<GraphicEdge> currentEdges) {
+	private List<GraphicEdge> getNeighBoringEdge(GraphicEdge e, List<GraphicEdge> currentEdges, Set<GraphicNode> visitedNodes) {
 		List<GraphicEdge> graphicEdges = new ArrayList<>();
 
 		for (GraphicEdge edge : edges) {
-			if ((!currentEdges.contains(edge) && !isEdgeFormingACycle(currentEdges, edge)))
+			if ((!currentEdges.contains(edge) && !isEdgeFormingACycle(visitedNodes, edge)))
 				graphicEdges.add(edge);
 		}
 
 		return graphicEdges;
 	}
 	
-	private boolean isEdgeFormingACycle(List<GraphicEdge> currentEdges, GraphicEdge edge) {
-		int count = 0;
-		
-		for (GraphicEdge e : currentEdges) {
-			
-			if (count == 2)
-				return true;
-			else if(edge.getNode1().equals(e.getNode1()) 
-					|| edge.getNode1().equals(e.getNode2()) 
-					|| edge.getNode2().equals(e.getNode1())
-					|| edge.getNode2().equals(e.getNode2())) 
-				count++;
-		}
+	private boolean isEdgeFormingACycle(Set<GraphicNode> visitedNodes, GraphicEdge edge) {
+		if(visitedNodes.contains(edge.getNode1()) && visitedNodes.contains(edge.getNode2()))
+			return true;
 		return false;
 	}
 

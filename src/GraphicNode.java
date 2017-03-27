@@ -1,3 +1,5 @@
+package src;
+
 
 public class GraphicNode {
 
@@ -31,6 +33,11 @@ public class GraphicNode {
 
 	public String toString() {
 		return "N" + nodeID;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(nodeID);
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
