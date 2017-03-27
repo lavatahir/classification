@@ -8,14 +8,17 @@ import java.util.List;
 import java.util.Random;
 
 public class MainClassification {
-	public static int numOfClasses = 4;
-	public static int numofFeatures = 10;
+	public static int numOfClasses = 2;
+	public static int numofFeatures = 5;
 	private static final String FILENAME = "classificationData.txt";
-	public static List<State> classes = new ArrayList<>();
-	private static int totalDataNum = 15;
+	public static List<State> classes;
+	private static int totalDataNum = 3;
 	public static int numOFCrossValidationFold = 5;
+	
+	private static String sampleType = "binary";
 
 	private static void geneateActualProbability(BufferedWriter bw) throws IOException {
+		classes = new ArrayList<>();
 		Random rand = new Random();
 		DecimalFormat df = new DecimalFormat("#.##");
 
@@ -42,11 +45,13 @@ public class MainClassification {
 
 	}
 
-	private static void generateRandomSamplesForClasses() throws IOException {
-		FileWriter fw = new FileWriter("artificialDataSets.txt");
+	private static void generateRandomSamplesForClasses(String sampleType, String fileName) throws IOException {
+
+		FileWriter fw = new FileWriter(fileName);
 		BufferedWriter bw = new BufferedWriter(fw);
 		Random rand = new Random();
 		DecimalFormat df = new DecimalFormat("0.00");
+		geneateActualProbability(bw);
 
 		for (State state : classes) {
 			bw.write("\n\n***********************Sample Data For W" + state.getNum() + "**************************\n\n");
@@ -55,14 +60,19 @@ public class MainClassification {
 				Sample s = new Sample(numofFeatures);
 				for (int j = 0; j < numofFeatures; j++) {
 					double estimateProb = Double.valueOf(df.format(rand.nextDouble()));
-
-					// int num = 1;
-					// if (estimateProb < state.getActualProbability(j)) {
-					// num = 0;
-					// }
+					
+					if (sampleType.equals(MainClassification.sampleType)) {
+						int num = 1;
+						if (estimateProb < state.getActualProbability(j)) {
+							num = 0;
+						}
+						bw.write("   " + num + "  | ");
+						s.initializeFeatureWithBinaryValue(j, num);
+					} else {
 
 					bw.write(" " + df.format(estimateProb) + " | ");
 					s.initializeFeatureWithDecimalValue(j, estimateProb);
+					}
 				}
 
 				state.addSample(s);
@@ -80,18 +90,33 @@ public class MainClassification {
 		FileWriter fw = new FileWriter(FILENAME);
 		BufferedWriter bw = new BufferedWriter(fw);
 
-		geneateActualProbability(bw);
-		generateRandomSamplesForClasses();
-		bw.close();
-		fw.close();
-		TrainingAndTestingClassification tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
-				totalDataNum, numOFCrossValidationFold, numofFeatures);
+		//bayesian
+//		generateRandomSamplesForClasses("", "artificialDataSets.txt");
+//		bw.close();
+//		fw.close();
+//		TrainingAndTestingClassification tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
+//				totalDataNum, numOFCrossValidationFold, numofFeatures);
+//		
+//		 fw = new FileWriter("bayesianClassification.txt");
+//		 bw = new BufferedWriter(fw);
+//		tr.performTrainingAndTesting(bw, "bayesian");
+//		bw.close();
+//		fw.close();
 		
-		 fw = new FileWriter("bayesianClassification.txt");
+		
+		//dependence tree
+		 fw = new FileWriter(FILENAME);
 		 bw = new BufferedWriter(fw);
-		tr.performTrainingAndTesting(bw, "bayesian");
-		bw.close();
-		fw.close();
+
+		generateRandomSamplesForClasses(MainClassification.sampleType, "artificialBinaryDataSets.txt");
+		
+		DependenceTree dependenceTree = new DependenceTree(numofFeatures);
+		List<Sample> samples = new ArrayList<>();
+		for (State state : classes) {
+			samples.addAll(state.getSamples());
+		}
+		dependenceTree.getMaximumSpanningTree(samples);
+		dependenceTree.drawInitialGraph();
 	}
 
 }
