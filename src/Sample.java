@@ -5,14 +5,14 @@ import java.util.List;
 
 public class Sample {
 
-	private double[] binaryFeatures;
+	private int[] binaryFeatures;
 	private double[] features;
 	public Sample(int numOfFeatures){
-		binaryFeatures = new double[numOfFeatures];
+		binaryFeatures = new int[numOfFeatures];
 		features = new double[numOfFeatures];
 	}
 	
-	public void initializeFeatureWithBinaryValue(int index, double num) {
+	public void initializeFeatureWithBinaryValue(int index, int num) {
 		binaryFeatures[index] = num;
 	}
 	
@@ -24,15 +24,15 @@ public class Sample {
 		return features[index];
 	}
 	
-	public double getProbabilityForBinaryFeature(int index) {
+	public int getBinaryNumber(int index) {
 		return binaryFeatures[index];
 	}
 
-	public double[] getBinaryFeatures() {
+	public int[] getBinaryFeatures() {
 		return binaryFeatures;
 	}
 
-	public void setBinaryFeatures(double[] features) {
+	public void setBinaryFeatures(int[] features) {
 		this.binaryFeatures = features;
 	}
 

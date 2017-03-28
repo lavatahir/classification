@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -34,7 +36,7 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
-public class DependenceTree {
+public class DependenceTree extends Classification{
 
 	private int numOfFeatures;
 	private List<GraphicNode> nodes;
@@ -42,7 +44,7 @@ public class DependenceTree {
 	private GraphicNode root;
 	private DelegateTree<GraphicNode, GraphicEdge> tree;
 
-	public DependenceTree(int numOfFeatures) {
+	public DependenceTree(int numOfClasses, int numOfFeatures) {
 		this.numOfFeatures = numOfFeatures;
 		this.nodes = new ArrayList<>();
 		this.edges = new ArrayList<>();
@@ -50,7 +52,7 @@ public class DependenceTree {
 		createCompleteConnectedGraph();
 	}
 
-	public void getMaximumSpanningTree(List<Sample> samples) {
+	public Set<GraphicNode> getMaximumSpanningTree(List<Sample> samples) {
 		for (GraphicEdge edge : edges) {
 			edge.setWeight(getEdgeWeight(edge, samples));
 
@@ -60,6 +62,7 @@ public class DependenceTree {
 		List<GraphicEdge> neighBoringEdges = new ArrayList<>(edges);
 		Set<GraphicNode> visitedNodes = new LinkedHashSet<>();
 
+
 		while (visitedNodes.size() < nodes.size()) {
 			Collections.sort(neighBoringEdges, (o1, o2) -> Double.compare(o2.getWeight(), o1.getWeight()));
 			newEdges.add(neighBoringEdges.get(0));
@@ -67,8 +70,10 @@ public class DependenceTree {
 			visitedNodes = addNodeToVisitedNodes(neighBoringEdges.get(0), visitedNodes);
 			neighBoringEdges = getNeighBoringEdge(neighBoringEdges.get(0), newEdges, visitedNodes);
 		}
-
+		
 		buildTree(newEdges);
+		
+		return new LinkedHashSet<>(nodes);
 	}
 
 	private Set<GraphicNode> addNodeToVisitedNodes(GraphicEdge edge, Set<GraphicNode> visitedNodes) {
@@ -170,19 +175,19 @@ public class DependenceTree {
 		double probIJ = 0.0;
 		double probI = 0.0;
 		double probJ = 0.0;
-
+		
 		for (Sample sample : samples) {
 			int indexForFeatureI = edge.getNode1().getNodeID() - 1;
 			int indexForFeatureJ = edge.getNode2().getNodeID() - 1;
 
-			if (sample.getProbabilityForBinaryFeature(indexForFeatureI) == i
-					&& sample.getProbabilityForBinaryFeature(indexForFeatureJ) == j)
+			if (sample.getBinaryNumber(indexForFeatureI) == i
+					&& sample.getBinaryNumber(indexForFeatureJ) == j)
 				probIJ += 1.0;
 
-			if (sample.getProbabilityForBinaryFeature(indexForFeatureI) == i)
+			if (sample.getBinaryNumber(indexForFeatureI) == i)
 				probI += 1;
 
-			if (sample.getProbabilityForBinaryFeature(indexForFeatureJ) == j)
+			if (sample.getBinaryNumber(indexForFeatureJ) == j)
 				probJ += 1;
 
 		}
@@ -273,10 +278,25 @@ public class DependenceTree {
 		this.root = root;
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		DependenceTree dependenceTree = new DependenceTree(4);
-		dependenceTree.drawInitialGraph();
+	@Override
+	public void classify(BufferedWriter bw, List<Sample> trainingSamples, List<Sample> testingSamples, State state,
+			int foldNum) {
+		
 	}
 
+	@Override
+	protected double getProbabilityOfWGivenX(Sample sample, State state) {	
+		double probability = 1.0;
+
+		for(int i=0; i<numOfFeatures; i++) {
+			int dependentIndex = state.getDependenceFeature(i).getDependentFeatureIndex();
+			
+			int num = -1;
+			if (dependentIndex != -1)
+				num = sample.getBinaryNumber(dependentIndex);
+			probability *= state.getDependenceTreeProbabilityOfXGivenW(i, sample.getBinaryNumber(i), num);
+		}
+		
+		return probability;
+	}
 }
