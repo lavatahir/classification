@@ -10,6 +10,7 @@ public class State {
 	
 	private List<Sample> samples;
 	private double[] actualProbabilities;
+	private Feature[] dependentFeatures;
 	
 	public State (int num, int featureLength, double aprioriProbability) {
 		this.num = num;
