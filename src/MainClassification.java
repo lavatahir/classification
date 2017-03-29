@@ -15,14 +15,12 @@ public class MainClassification {
 	public static int numofFeatures = 10;
 	private static final String FILENAME = "classificationData.txt";
 	public static List<State> classes;
-	private static int totalDataNum = 2000;
+	private static int totalDataNum = 6;
 	public static int numOFCrossValidationFold = 5;
-	
-	
-	//classification types
+
+	// classification types
 	public static String bayesianClassificationType = "bayesian";
 	public static String dependenceTreeClassificationType = "dependence";
-
 
 	private static String sampleType = "binary";
 
@@ -67,7 +65,7 @@ public class MainClassification {
 					"\n\n***********************Sample Data For W" + state.getNum() + "**************************\n\n");
 			printFeatures(bw);
 			for (int i = 0; i < totalDataNum; i++) {
-				Sample s = new Sample(numofFeatures);
+				Sample s = new Sample(numofFeatures, state.getNum());
 				for (int j = 0; j < numofFeatures; j++) {
 					double estimateProb = Double.valueOf(df.format(rand.nextDouble()));
 
@@ -96,10 +94,11 @@ public class MainClassification {
 		fw.close();
 	}
 
-	private static void generateRandomProbabilityForDependenceTree(Set<GraphicNode> tree, BufferedWriter bw) throws IOException {
+	private static void generateRandomProbabilityForDependenceTree(Set<GraphicNode> tree, BufferedWriter bw)
+			throws IOException {
 		for (State state : classes) {
 			bw.write("\n\n\n\n***********************Sample Data Probability For W" + state.getNum()
-					+ "**************************");
+					+ "**************************\n");
 			for (GraphicNode node : tree) {
 				if (node.getParent() == null) {
 					state.setDepenceProbability(node.getNodeID() - 1, -1);
@@ -159,19 +158,22 @@ public class MainClassification {
 		}
 		bw.close();
 		fw.close();
-		
-		Set<GraphicNode> tree = dependenceTree.getMaximumSpanningTree(samples);
-		dependenceTree.drawInitialGraph();
-		
-		fw = new FileWriter("dependenceTree.txt");
-		bw = new BufferedWriter(fw);
-		generateRandomProbabilityForDependenceTree(tree, bw);
-		tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
-				totalDataNum, numOFCrossValidationFold, numofFeatures);
 
-		tr.performTrainingAndTesting(bw, MainClassification.dependenceTreeClassificationType);
-		bw.close();
-		fw.close();
-		}
+//		Set<GraphicNode> tree = dependenceTree.getMaximumSpanningTree(samples);
+//		dependenceTree.drawInitialGraph();
+//
+//		fw = new FileWriter("dependenceTree.txt");
+//		bw = new BufferedWriter(fw);
+//		generateRandomProbabilityForDependenceTree(tree, bw);
+//		tr = new TrainingAndTestingClassification(new LinkedHashSet(classes), totalDataNum, numOFCrossValidationFold,
+//				numofFeatures);
+//
+//		tr.performTrainingAndTesting(bw, MainClassification.dependenceTreeClassificationType);
+//		bw.close();
+//		fw.close();
+		
+		DecisionTree decisionTree = new DecisionTree(classes.size(), numofFeatures);
+	    decisionTree.getDecisionTree(samples);
+	}
 
 }

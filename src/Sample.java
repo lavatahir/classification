@@ -7,9 +7,12 @@ public class Sample {
 
 	private int[] binaryFeatures;
 	private double[] features;
-	public Sample(int numOfFeatures){
+	private int classNumber;
+	
+	public Sample(int numOfFeatures, int classNumber){
 		binaryFeatures = new int[numOfFeatures];
 		features = new double[numOfFeatures];
+		this.classNumber = classNumber;
 	}
 	
 	public void initializeFeatureWithBinaryValue(int index, int num) {
@@ -34,6 +37,14 @@ public class Sample {
 
 	public void setBinaryFeatures(int[] features) {
 		this.binaryFeatures = features;
+	}
+
+	public int getClassNumber() {
+		return classNumber;
+	}
+
+	public void setClassNumber(int classNumber) {
+		this.classNumber = classNumber;
 	}
 
 	public static void main(String[] args) {
