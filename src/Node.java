@@ -50,16 +50,16 @@ public class Node {
 
 	private void print(String prefix, boolean isTail, BufferedWriter bw) {
 		try {
-			bw.write("\n" + prefix + (isTail ? "|___ " : "|---- ") + num);
+			bw.write("\n" + prefix + (isTail ? "|____ " : "|---- ") + num);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		for (int i = 0; i < children.size() - 1; i++) {
-			children.get(i).print(prefix + (isTail ? "    " : "|   "), false, bw);
+			children.get(i).print(prefix + (isTail ? "     " : "|     "), false, bw);
 		}
 		if (children.size() > 0) {
-			children.get(children.size() - 1).print(prefix + (isTail ? "    " : "|   "), true, bw);
+			children.get(children.size() - 1).print(prefix + (isTail ? "     " : "|     "), true, bw);
 		}
 	}
 
@@ -73,6 +73,10 @@ public class Node {
 		Node node = (Node) obj;
 
 		return this.num == node.num;
+	}
+	
+	public String toString() {
+		return "N" + num;
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

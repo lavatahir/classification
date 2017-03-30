@@ -2,32 +2,32 @@ package src;
 
 import java.text.DecimalFormat;
 
-public class GraphicEdge {
+public class Edge {
 
-	private GraphicNode node1;
-	private GraphicNode node2;
+	private Node node1;
+	private Node node2;
 	private double weight;
 	private int id;
 
-	public GraphicEdge(int id, GraphicNode node1, GraphicNode node2) {
+	public Edge(int id, Node node1, Node node2) {
 		this.id = id;
 		this.node1 = node1;
 		this.node2 = node2;
 	}
 
-	public GraphicNode getNode1() {
+	public Node getNode1() {
 		return node1;
 	}
 
-	public void setNode1(GraphicNode node1) {
+	public void setNode1(Node node1) {
 		this.node1 = node1;
 	}
 
-	public GraphicNode getNode2() {
+	public Node getNode2() {
 		return node2;
 	}
 
-	public void setNode2(GraphicNode node2) {
+	public void setNode2(Node node2) {
 		this.node2 = node2;
 	}
 
@@ -52,7 +52,7 @@ public class GraphicEdge {
 		if(obj == null || obj.getClass() != this.getClass())
 			return false;
 		
-		GraphicEdge edge = (GraphicEdge) obj;
+		Edge edge = (Edge) obj;
 		
 		return this.weight == edge.weight && edge.node1.equals(node1) && edge.node2.equals(node2);
 	}

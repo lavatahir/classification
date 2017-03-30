@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 public class ClassificationUI {
 	public static int numOfClasses = 4;
@@ -25,6 +26,7 @@ public class ClassificationUI {
 	private static final String artificialDataSetsFileName = "decimalValueDataSets.txt";
 	private static final String binaryDataSetsFileName = "binaryDataSets.txt";
 	private static final String artificialNaiveBayesFileName = "artificialNaiveBayes.txt";
+	private static final String artificialDependenceFileName = "artificialDependenceTree.txt";
 
 	
 	//tree
@@ -39,6 +41,7 @@ public class ClassificationUI {
 	
 	// classification types
 	public static String naivebayesianClassificationType = "naive";
+	public static String dependentTreeClassificationType = "dependentTree";
 
 	
 	private static void printDataOptions() {
@@ -170,27 +173,27 @@ public class ClassificationUI {
 					  actualProbabilities[s.getNum() - 1][n.getNum()-1][1] = rand.nextDouble();
 				  }
 				  
-				  printDependenceTreeFeatureProbability(bw, s, n);
+				  printDependenceTreeFeatureProbability(bw, s, n, actualProbabilities, dependenceTreeRoot);
 			  }
 		  }
 	  }
 	  
-	  private static void printDependenceTreeFeatureProbability(BufferedWriter bw, State state, Node node) throws IOException {
+	  public static void printDependenceTreeFeatureProbability(BufferedWriter bw, State state, Node node, double[][][] probabilities, Node root) throws IOException {
 			DecimalFormat df = new DecimalFormat("0.00");
 
 			
-			if (node.equals(dependenceTreeRoot)) {
+			if (node.equals(root)) {
 				bw.write("P(X" + node.getNum() + " = 0 ) = "
-						+ df.format(actualProbabilities[state.getNum() - 1][node.getNum()-1][0]));
+						+ df.format(probabilities[state.getNum() - 1][node.getNum()-1][0]));
 				bw.write("\tP(X" + node.getNum() + " = 1 ) = "
-						+ df.format(1 - actualProbabilities[state.getNum() - 1][node.getNum()-1][0]) + "\n\n");
+						+ df.format(1 - probabilities[state.getNum() - 1][node.getNum()-1][0]) + "\n\n");
 			} else {
 
 				for (int i = 0; i < 2; i++) {
 					bw.write("P(X" + node.getNum() + " = 0 | X" + node.getParent().getNum() + " = " + i + " ) = "
-							+ df.format(actualProbabilities[state.getNum()-1][node.getNum()-1][i]));
+							+ df.format(probabilities[state.getNum()-1][node.getNum()-1][i]));
 					bw.write("\tP(X" + node.getNum() + " = 1 | X" + node.getParent().getNum() + " = " + i + " ) = "
-							+ df.format(1 - actualProbabilities[state.getNum()-1][node.getNum()-1][i])+ "\n\n");
+							+ df.format(1 - probabilities[state.getNum()-1][node.getNum()-1][i])+ "\n\n");
 				}
 			}
 		}
@@ -228,6 +231,13 @@ public class ClassificationUI {
 				
 				naiveBayes.close();
 
+				BufferedWriter dependenceTreeFile = new BufferedWriter
+					    (new OutputStreamWriter(new FileOutputStream(artificialDependenceFileName),"UTF-8"));
+				
+				
+				tr.performTrainingAndTesting(dependenceTreeFile, ClassificationUI.dependentTreeClassificationType);
+				
+				dependenceTreeFile.close();
 			} else if (input.equals("2")) {
 				createStates();
 			} else if (input.equals("3")) {

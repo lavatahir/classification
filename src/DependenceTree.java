@@ -1,12 +1,5 @@
 package src;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Paint;
-import java.awt.Stroke;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -15,52 +8,32 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 
-import javax.swing.JFrame;
 
-import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.DirectedOrderedSparseMultigraph;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.ObservableGraph;
-import edu.uci.ics.jung.graph.SparseMultigraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-
-public class DependenceTree extends Classification{
+public class DependenceTree {
 
 	private int numOfFeatures;
-	private List<GraphicNode> nodes;
-	private List<GraphicEdge> edges;
-	private GraphicNode root;
-	private DelegateTree<GraphicNode, GraphicEdge> tree;
+	private List<Node> nodes;
+	private List<Edge> edges;
+	private Node root;
 
-	public DependenceTree(int numOfClasses, int numOfFeatures) {
+	public DependenceTree(int numOfClasses, int numOfFeatures, List<Sample> samples) {
 		this.numOfFeatures = numOfFeatures;
 		this.nodes = new ArrayList<>();
 		this.edges = new ArrayList<>();
 		createNodes();
 		createCompleteConnectedGraph();
+		getMaximumSpanningTree(samples);
 	}
 
-	public Set<GraphicNode> getMaximumSpanningTree(List<Sample> samples) {
-		for (GraphicEdge edge : edges) {
+	public void getMaximumSpanningTree(List<Sample> samples) {
+		for (Edge edge : edges) {
 			edge.setWeight(getEdgeWeight(edge, samples));
 
 		}
 
-		List<GraphicEdge> newEdges = new ArrayList<>();
-		List<GraphicEdge> neighBoringEdges = new ArrayList<>(edges);
-		Set<GraphicNode> visitedNodes = new LinkedHashSet<>();
+		List<Edge> newEdges = new ArrayList<>();
+		List<Edge> neighBoringEdges = new ArrayList<>(edges);
+		Set<Node> visitedNodes = new LinkedHashSet<>();
 
 
 		while (visitedNodes.size() < nodes.size()) {
@@ -71,12 +44,14 @@ public class DependenceTree extends Classification{
 			neighBoringEdges = getNeighBoringEdge(neighBoringEdges.get(0), newEdges, visitedNodes);
 		}
 		
-		buildTree(newEdges);
-		
+		buildTree(newEdges);		
+	}
+	
+	public Set<Node> getDependencyTreeNodes () {
 		return new LinkedHashSet<>(nodes);
 	}
 
-	private Set<GraphicNode> addNodeToVisitedNodes(GraphicEdge edge, Set<GraphicNode> visitedNodes) {
+	private Set<Node> addNodeToVisitedNodes(Edge edge, Set<Node> visitedNodes) {
 		if (!visitedNodes.contains(edge.getNode1()))
 			visitedNodes.add(edge.getNode1());
 		if (!visitedNodes.contains(edge.getNode2()))
@@ -85,47 +60,44 @@ public class DependenceTree extends Classification{
 		return visitedNodes;
 	}
 
-	private void buildTree(List<GraphicEdge> newEdges) {
+	private void buildTree(List<Edge> newEdges) {
 		edges = new ArrayList<>(newEdges);
 		nodes = new ArrayList<>();
-		tree = new DelegateTree<>();
-		Stack<GraphicNode> newNodes = new Stack<>();
-		List<GraphicEdge> visitedEdges = new ArrayList<>();
+		Stack<Node> newNodes = new Stack<>();
+		List<Edge> visitedEdges = new ArrayList<>();
 		Random rand = new Random();
 
 		if (edges.size() > 0) {
 			root = edges.get(0).getNode1();
 			nodes.add(root);
-			tree.setRoot(root);
 			newNodes.push(root);
 
-			GraphicNode newNode = new GraphicNode(edges.get(0).getNode2().getNodeID());
+			Node newNode = new Node(edges.get(0).getNode2().getNum());
 			newNode.setParent(root);
 			newNodes.push(newNode);
+			nodes.get(0).addChildren(newNode);
 			nodes.add(newNode);
-			tree.addChild(edges.get(0), root, newNode);
 
 			visitedEdges.add(edges.get(0));
 		}
 
 		while (!newNodes.isEmpty()) {
-			GraphicNode currentNode = newNodes.pop();
-			for (GraphicEdge edge : edges) {
+			Node currentNode = newNodes.pop();
+			for (Edge edge : edges) {
 				boolean found = false;
-				GraphicNode newNode = null;
+				Node newNode = null;
 
-				if (edge.getNode1().getNodeID() == currentNode.getNodeID() && !visitedEdges.contains(edge)) {
-					newNode = new GraphicNode(edge.getNode2().getNodeID());
+				if (edge.getNode1().getNum() == currentNode.getNum() && !visitedEdges.contains(edge)) {
+					newNode = new Node(edge.getNode2().getNum());
 					found = true;
-				} else if (edge.getNode2().getNodeID() == currentNode.getNodeID() && !visitedEdges.contains(edge)) {
-					newNode = new GraphicNode(edge.getNode1().getNodeID());
+				} else if (edge.getNode2().getNum() == currentNode.getNum() && !visitedEdges.contains(edge)) {
+					newNode = new Node(edge.getNode1().getNum());
 					found = true;
 				}
 
 				if (found) {
 					newNode.setParent(currentNode);
-					//tree.addVertex(newNode);
-					tree.addChild(edge, currentNode, newNode);
+					nodes.get(nodes.indexOf(currentNode)).addChildren(newNode);
 					nodes.add(newNode);
 					newNodes.push(newNode);
 					visitedEdges.add(edge);
@@ -135,11 +107,11 @@ public class DependenceTree extends Classification{
 
 	}
 
-	private List<GraphicEdge> getNeighBoringEdge(GraphicEdge e, List<GraphicEdge> currentEdges,
-			Set<GraphicNode> visitedNodes) {
-		List<GraphicEdge> graphicEdges = new ArrayList<>();
+	private List<Edge> getNeighBoringEdge(Edge e, List<Edge> currentEdges,
+			Set<Node> visitedNodes) {
+		List<Edge> graphicEdges = new ArrayList<>();
 
-		for (GraphicEdge edge : edges) {
+		for (Edge edge : edges) {
 			if ((!currentEdges.contains(edge) && !isEdgeFormingACycle(visitedNodes, edge)
 					&& isEdgeFormingADirectedGraph(visitedNodes, edge)))
 				graphicEdges.add(edge);
@@ -148,19 +120,19 @@ public class DependenceTree extends Classification{
 		return graphicEdges;
 	}
 
-	private boolean isEdgeFormingACycle(Set<GraphicNode> visitedNodes, GraphicEdge edge) {
+	private boolean isEdgeFormingACycle(Set<Node> visitedNodes, Edge edge) {
 		if (visitedNodes.contains(edge.getNode1()) && visitedNodes.contains(edge.getNode2()))
 			return true;
 		return false;
 	}
 
-	private boolean isEdgeFormingADirectedGraph(Set<GraphicNode> visitedNodes, GraphicEdge edge) {
+	private boolean isEdgeFormingADirectedGraph(Set<Node> visitedNodes, Edge edge) {
 		if (visitedNodes.contains(edge.getNode1()) || visitedNodes.contains(edge.getNode2()))
 			return true;
 		return false;
 	}
 
-	private double getEdgeWeight(GraphicEdge edge, List<Sample> samples) {
+	private double getEdgeWeight(Edge edge, List<Sample> samples) {
 		double weight = 0.0;
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 2; j++) {
@@ -171,14 +143,14 @@ public class DependenceTree extends Classification{
 		return weight;
 	}
 
-	private double getWeight(GraphicEdge edge, int i, int j, List<Sample> samples) {
+	private double getWeight(Edge edge, int i, int j, List<Sample> samples) {
 		double probIJ = 0.0;
 		double probI = 0.0;
 		double probJ = 0.0;
 		
 		for (Sample sample : samples) {
-			int indexForFeatureI = edge.getNode1().getNodeID() - 1;
-			int indexForFeatureJ = edge.getNode2().getNodeID() - 1;
+			int indexForFeatureI = edge.getNode1().getNum() - 1;
+			int indexForFeatureJ = edge.getNode2().getNum() - 1;
 
 			if (sample.getBinaryNumber(indexForFeatureI) == i
 					&& sample.getBinaryNumber(indexForFeatureJ) == j)
@@ -204,7 +176,7 @@ public class DependenceTree extends Classification{
 
 	private void createNodes() {
 		for (int i = 0; i < numOfFeatures; i++) {
-			GraphicNode n = new GraphicNode(i + 1);
+			Node n = new Node(i + 1);
 			nodes.add(n);
 		}
 	}
@@ -213,90 +185,18 @@ public class DependenceTree extends Classification{
 		int count = 1;
 		for (int i = 0; i < numOfFeatures; i++) {
 			for (int j = i + 1; j < numOfFeatures; j++) {
-				GraphicEdge edge = new GraphicEdge(count, nodes.get(i), nodes.get(j));
+				Edge edge = new Edge(count, nodes.get(i), nodes.get(j));
 				edges.add(edge);
 				count++;
 			}
 		}
 	}
 
-	public void drawInitialGraph() {
-		System.out.println("Root of the graph is Node " + root.getNodeID());
-		// The Layout<V, E> is parameterized by the vertex and edge types
-		Layout<GraphicNode, GraphicEdge> layout = new FRLayout<>(tree);
-		layout.setSize(new Dimension(1100, 640)); // sets the initial size of the
-													// space
-		// The BasicVisualizationServer<V,E> is parameterized by the edge types
-		BasicVisualizationServer<GraphicNode, GraphicEdge> vv = new BasicVisualizationServer<GraphicNode, GraphicEdge>(layout);
-		vv.setPreferredSize(new Dimension(1100, 640)); // Sets the viewing area
-														// size
-
-		Transformer<GraphicNode, Paint> vertexPaint = new Transformer<GraphicNode, Paint>() {
-			@Override
-			public Paint transform(GraphicNode arg0) {
-				// TODO Auto-generated method stub
-				return Color.GREEN;
-			}
-		};
-		// Set up a new stroke Transformer for the edges
-		float dash[] = { 10.0f };
-		final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash,
-				0.0f);
-		Transformer<GraphicEdge, Stroke> edgeStrokeTransformer = new Transformer<GraphicEdge, Stroke>() {
-
-			@Override
-			public Stroke transform(GraphicEdge arg0) {
-				// TODO Auto-generated method stub
-				return edgeStroke;
-			}
-		};
-
-		// Create a graph mouse and add it to the visualization component
-		DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-		gm.setMode(Mode.TRANSFORMING);
-		
-
-		vv.addKeyListener(gm.getModeKeyListener());
-
-		vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-		vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
-		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
-		vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-
-		JFrame frame = new JFrame("Simple Graph View 2");
-		frame.getContentPane().add(vv);
-		frame.pack();
-		frame.setVisible(true);
-	}
-
-	public GraphicNode getRoot() {
+	public Node getRoot() {
 		return root;
 	}
 
-	public void setRoot(GraphicNode root) {
+	public void setRoot(Node root) {
 		this.root = root;
-	}
-
-	@Override
-	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples,State state,
-			int foldNum) {
-		
-	}
-
-	@Override
-	protected double getProbabilityOfWGivenX(Sample sample, State state) {	
-		double probability = 1.0;
-
-		for(int i=0; i<numOfFeatures; i++) {
-			int dependentIndex = state.getDependenceFeature(i).getDependentFeatureIndex();
-			
-			int num = -1;
-			if (dependentIndex != -1)
-				num = sample.getBinaryNumber(dependentIndex);
-			probability *= state.getDependenceTreeProbabilityOfXGivenW(i, sample.getBinaryNumber(i), num);
-		}
-		
-		return probability;
 	}
 }
