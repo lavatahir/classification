@@ -21,7 +21,7 @@ public class BayesianClassification extends Classification {
 	}
 
 	@Override
-	public void classify(BufferedWriter bw, List<Sample> trainingSamples, List<Sample> testingSamples, State state,
+	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples,  State state,
 			int foldNum) {
 		populateMean(trainingSamples, state);
 		populateVariance(trainingSamples, state);
@@ -83,7 +83,7 @@ public class BayesianClassification extends Classification {
 		DecimalFormat df = new DecimalFormat("0.0000");
 
 		bw.write("\n\n*****************************" + message + "***********************\n");
-		MainClassification.printFeatures(bw);
+		//MainClassification.printFeatures(bw);
 		for (int j = 0; j < numOfFeatures; j++) {
 			bw.write(" " + df.format(array[i][j]) + " | ");
 		}

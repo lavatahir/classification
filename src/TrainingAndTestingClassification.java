@@ -21,7 +21,7 @@ public class TrainingAndTestingClassification {
 		this.totalDataNum = totalDataNum;
 		this.numOfCrossValidation = numOfCrossValidation;
 		this.numOfFeatures = numOfFeatures;
-		accuracy = new double[MainClassification.numOFCrossValidationFold];
+		accuracy = new double[numOfCrossValidation];
 	}
 
 	public void performTrainingAndTesting(BufferedWriter bw, String classificationType) throws IOException {
@@ -30,7 +30,7 @@ public class TrainingAndTestingClassification {
 		int division = totalDataNum / numOfCrossValidation;
 
 		for (int i = 1; i <= numOfCrossValidation; i++) {
-			confusionMatrix = new double[MainClassification.numOfClasses][MainClassification.numOfClasses];
+			confusionMatrix = new double[ClassificationUI.numOfClasses][ClassificationUI.numOfClasses];
 
 			for (State s : classes) {
 				ArrayList<Sample> trainingSamples = new ArrayList<>(s.getSamples());
@@ -38,7 +38,7 @@ public class TrainingAndTestingClassification {
 						trainingSamples.subList((i - 1) * division, i * division));
 				trainingSamples.subList((i - 1) * division, i * division).clear();
 
-				classification.classify(bw, trainingSamples, testingSamples, s, i - 1);
+				classification.trainSamples(bw, trainingSamples, s, i - 1);
 				populateConfusionMatrix(testingSamples, s, classification);
 			}
 
@@ -53,8 +53,8 @@ public class TrainingAndTestingClassification {
 	}
 
 	private Classification getClassificationType(String classificationType) {
-		if (classificationType.equals(MainClassification.bayesianClassificationType))
-			return new BayesianClassification(classes.size(), numOfFeatures);
+		if (classificationType.equals(ClassificationUI.naivebayesianClassificationType))
+			return new NaiveBayesClassifier(classes.size(), numOfFeatures);
 
 		return new DependenceTree(classes.size(), numOfFeatures);
 	}
@@ -63,12 +63,12 @@ public class TrainingAndTestingClassification {
 		DecimalFormat df = new DecimalFormat("0.0");
 
 		bw.write("\n\n*****************************" + message + "***********************\n");
-		for (int i = 1; i <= MainClassification.numOfClasses; i++)
+		for (int i = 1; i <= ClassificationUI.numOfClasses; i++)
 			bw.write("  W" + i + "  | ");
 
 		bw.write("\n");
-		for (int i = 0; i < MainClassification.numOfClasses; i++) {
-			for (int j = 0; j < MainClassification.numOfClasses; j++) {
+		for (int i = 0; i < ClassificationUI.numOfClasses; i++) {
+			for (int j = 0; j < ClassificationUI.numOfClasses; j++) {
 				bw.write(" " + df.format(confusionMatrix[i][j]) + " | ");
 			}
 			bw.write("\n");
@@ -91,27 +91,24 @@ public class TrainingAndTestingClassification {
 	}
 	
 	public void assignAccuracy(int foldNum, int totalNumOfElement) {
-		for (int i = 0; i < MainClassification.numOfClasses; i++) {
+		for (int i = 0; i < ClassificationUI.numOfClasses; i++) {
 			accuracy[foldNum] += confusionMatrix[i][i];
 		}
 
 		accuracy[foldNum] = accuracy[foldNum] / totalNumOfElement;
-		
-		System.out.println(accuracy[foldNum]);
-
 	}
 
 	
-	protected void populateConfusionMatrix(List<Sample> testingSamples, State state, Classification classification) {
+	private void populateConfusionMatrix(List<Sample> testingSamples, State state, Classification classification) {
 		for (Sample sample : testingSamples) {
-			double totalProbability = 0.0;
+			double totalProbability = Double.MIN_VALUE;
 			int indexForRightClass = 0;
-			for (int i = 0; i < MainClassification.numOfClasses; i++) {
-				double sum = classification.getProbabilityOfWGivenX(sample, MainClassification.classes.get(i));
 
-				if (i == 0 || sum > totalProbability) {
+			for (State s : classes) {
+				double sum = classification.getProbabilityOfWGivenX(sample, s);
+				if (sum > totalProbability) {
 					totalProbability = sum;
-					indexForRightClass = i;
+					indexForRightClass = s.getNum()-1;
 				}
 			}
 			

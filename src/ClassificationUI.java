@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -15,14 +16,15 @@ import java.util.Scanner;
 public class ClassificationUI {
 	public static int numOfClasses = 4;
 	public static int numofFeatures = 10;
-	private static int totalDataNum = 6;
-	public static int numOFCrossValidationFold = 2000;
+	private static int totalDataNum = 2000;
+	public static int numOFCrossValidationFold = 5;
 
 	public static List<State> classes;
 
 	// file names
 	private static final String artificialDataSetsFileName = "decimalValueDataSets.txt";
 	private static final String binaryDataSetsFileName = "binaryDataSets.txt";
+	private static final String artificialNaiveBayesFileName = "artificialNaiveBayes.txt";
 
 	
 	//tree
@@ -34,6 +36,9 @@ public class ClassificationUI {
 	
 	//decimal samples for classes
 	private static double[][][] samples;
+	
+	// classification types
+	public static String naivebayesianClassificationType = "naive";
 
 	
 	private static void printDataOptions() {
@@ -59,7 +64,7 @@ public class ClassificationUI {
 		}
 	}
 
-	private static void generateRandomSamplesForClasses(String fileName) {
+	private static void generateRandomSamplesForClasses() {
 
 		try {
 			samples = new double[classes.size()][totalDataNum][numofFeatures];
@@ -69,7 +74,7 @@ public class ClassificationUI {
 			DecimalFormat df = new DecimalFormat("0.00");
 
 			for (State state : classes) {
-				bw.write("\n\n***********************Sample Data For W" + state.getNum()
+				bw.write("\n\n\n\n\n***********************Sample Data For W" + state.getNum()
 						+ "**************************\n\n");
 				printFeatures(bw);
 				for (int i = 0; i < totalDataNum; i++) {
@@ -128,21 +133,20 @@ public class ClassificationUI {
 		  for(Node node : dependenceTree) {
 			  int num = 1;
 			  if (node.equals(dependenceTreeRoot)) {
-				  if (samples[state.getNum()-1][index][node.getNum()-1] < actualProbabilities[node.getNum()-1][0][0]){
+				  if (samples[state.getNum()-1][index][node.getNum()-1] < actualProbabilities[state.getNum()-1][node.getNum()-1][0]){
 					  num = 0;
 				  }
 			  } else {
 				  int dependentNodeIndex = s.getBinaryNumber(node.getParent().getNum() - 1);
-				  if (samples[state.getNum()-1][index][node.getNum()-1] < actualProbabilities[node.getNum()-1][dependentNodeIndex][0]) {
+				  if (samples[state.getNum()-1][index][node.getNum()-1] < actualProbabilities[state.getNum()-1][node.getNum()-1][dependentNodeIndex]) {
 					  num = 0;
 				  }
-
 			  }
 			  
-			  s.initializeFeatureWithBinaryValue(node.getNum() - 1, 1);
+			  s.initializeFeatureWithBinaryValue(node.getNum() - 1, num);
 			  
 			  bw.write("   " + num + "  | ");
-		  }1
+		  }
 		  
 		  bw.write("\n");
 		  
@@ -153,19 +157,17 @@ public class ClassificationUI {
 		  //possibility for binary is 1 or 0
 		  int num = 2;
 		  Random rand = new Random();
-		  actualProbabilities = new double[numofFeatures][num][num];
+		  actualProbabilities = new double[numOfClasses][numofFeatures][num];
 		  for(State s : classes) {
 			  bw.write("\n\n\n\n***********************Sample Data Probability For W" + s.getNum()
 				+ "**************************\n");
 			  for(Node n : dependenceTree) {
 				  
-				  //actualProbabilities[featureIndex][dependencyNumber][featureNumber]
-				  actualProbabilities[n.getNum()-1][0][0] = rand.nextDouble();
-				  actualProbabilities[n.getNum()-1][0][1] = 1 - actualProbabilities[n.getNum()-1][0][0];
+				  //actualProbabilities[numOfClasses][featureIndex][dependencyNumber]
+				  actualProbabilities[s.getNum() - 1][n.getNum()-1][0] = rand.nextDouble();
 				  
 				  if(!n.equals(dependenceTreeRoot)) {
-					  actualProbabilities[n.getNum()-1][1][0] = rand.nextDouble();
-					  actualProbabilities[n.getNum()-1][1][1] = 1 - actualProbabilities[n.getNum()-1][1][0];
+					  actualProbabilities[s.getNum() - 1][n.getNum()-1][1] = rand.nextDouble();
 				  }
 				  
 				  printDependenceTreeFeatureProbability(bw, s, n);
@@ -179,16 +181,16 @@ public class ClassificationUI {
 			
 			if (node.equals(dependenceTreeRoot)) {
 				bw.write("P(X" + node.getNum() + " = 0 ) = "
-						+ df.format(actualProbabilities[node.getNum()-1][0][0]));
+						+ df.format(actualProbabilities[state.getNum() - 1][node.getNum()-1][0]));
 				bw.write("\tP(X" + node.getNum() + " = 1 ) = "
-						+ df.format(actualProbabilities[node.getNum()-1][0][1]) + "\n\n");
+						+ df.format(1 - actualProbabilities[state.getNum() - 1][node.getNum()-1][0]) + "\n\n");
 			} else {
 
 				for (int i = 0; i < 2; i++) {
 					bw.write("P(X" + node.getNum() + " = 0 | X" + node.getParent().getNum() + " = " + i + " ) = "
-							+ df.format(actualProbabilities[node.getNum()-1][i][0]));
+							+ df.format(actualProbabilities[state.getNum()-1][node.getNum()-1][i]));
 					bw.write("\tP(X" + node.getNum() + " = 1 | X" + node.getParent().getNum() + " = " + i + " ) = "
-							+ df.format(actualProbabilities[node.getNum()-1][i][1])+ "\n\n");
+							+ df.format(1 - actualProbabilities[state.getNum()-1][node.getNum()-1][i])+ "\n\n");
 				}
 			}
 		}
@@ -198,9 +200,9 @@ public class ClassificationUI {
 		System.out.println("Welcome to my classification program\n");
 
 		boolean exitProgram = false;
+		FileWriter fw = new FileWriter(binaryDataSetsFileName);
 
-		BufferedWriter bw = new BufferedWriter
-			    (new OutputStreamWriter(new FileOutputStream(binaryDataSetsFileName),"UTF-8"));
+		BufferedWriter bw = new BufferedWriter(fw);
 		
 		while (!exitProgram) {
 			System.out.println("Please select what you would like to do");
@@ -210,19 +212,34 @@ public class ClassificationUI {
 
 			if (input.equals("1")) {
 				createStates();
-				generateRandomSamplesForClasses(artificialDataSetsFileName);
+				generateRandomSamplesForClasses();
 				createDepedenceTree();
 				dependenceTreeRoot.print(bw);
 				generateRandomProbabilityForClassesUsingDependencyTree(bw);
 				generateRandomBinarySamplesForClasses(bw);
+
+				TrainingAndTestingClassification tr = new TrainingAndTestingClassification(new LinkedHashSet(classes),
+						totalDataNum, numOFCrossValidationFold, numofFeatures);
+				
+				BufferedWriter naiveBayes = new BufferedWriter
+					    (new OutputStreamWriter(new FileOutputStream(artificialNaiveBayesFileName),"UTF-8"));
+				
+				tr.performTrainingAndTesting(naiveBayes, ClassificationUI.naivebayesianClassificationType);
+				
+				naiveBayes.close();
+
 			} else if (input.equals("2")) {
 				createStates();
 			} else if (input.equals("3")) {
 				exitProgram = true;
 			}
+			
+			
 		}
 		
 		bw.close();
+		fw.close();
+		
 	}
 
 }

@@ -77,7 +77,7 @@ public class DecisionTree extends Classification {
 	}
 
 	@Override
-	public void classify(BufferedWriter bw, List<Sample> trainingSamples, List<Sample> testingSamples, State state,
+	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples, State state,
 			int foldNum) {
 
 	}
