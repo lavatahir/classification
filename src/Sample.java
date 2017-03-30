@@ -6,12 +6,12 @@ import java.util.List;
 public class Sample {
 
 	private int[] binaryFeatures;
-	private double[] features;
+	private double[] featuresWithDecimalValue;
 	private int classNumber;
 	
 	public Sample(int numOfFeatures, int classNumber){
 		binaryFeatures = new int[numOfFeatures];
-		features = new double[numOfFeatures];
+		featuresWithDecimalValue = new double[numOfFeatures];
 		this.classNumber = classNumber;
 	}
 	
@@ -20,11 +20,11 @@ public class Sample {
 	}
 	
 	public void initializeFeatureWithDecimalValue(int index, double num) {
-		features[index] = num;
+		featuresWithDecimalValue[index] = num;
 	}
 	
-	public double getProbability(int index) {
-		return features[index];
+	public double getDecimalValueForFeature(int index) {
+		return featuresWithDecimalValue[index];
 	}
 	
 	public int getBinaryNumber(int index) {

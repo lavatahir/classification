@@ -38,7 +38,7 @@ public class BayesianClassification extends Classification {
 		for (int i = 0; i < numOfFeatures; i++) {
 			double sum = 0;
 			for (Sample sample : trainingSamples) {
-				sum += sample.getProbability(i);
+				sum += sample.getDecimalValueForFeature(i);
 			}
 
 			mean[state.getNum() - 1][i] = sum / trainingSamples.size();
@@ -49,7 +49,7 @@ public class BayesianClassification extends Classification {
 		for (int i = 0; i < numOfFeatures; i++) {
 			double sum = 0;
 			for (Sample sample : trainingSamples) {
-				sum += Math.pow(sample.getProbability(i) - mean[state.getNum() - 1][i], 2);
+				sum += Math.pow(sample.getDecimalValueForFeature(i) - mean[state.getNum() - 1][i], 2);
 			}
 
 			variance[state.getNum() - 1][i] = sum / trainingSamples.size();
@@ -60,7 +60,7 @@ public class BayesianClassification extends Classification {
 	protected double getProbabilityOfWGivenX(Sample sample, State state) {
 		double totalProbability = state.getAprioriProbability();
 		for (int i = 0; i < numOfFeatures; i++) {
-			double gaussianProbabilityForW = getGaussianProbabilityOfXGivenW(sample.getProbability(i),
+			double gaussianProbabilityForW = getGaussianProbabilityOfXGivenW(sample.getDecimalValueForFeature(i),
 					state.getNum() - 1, i);
 
 			totalProbability *= gaussianProbabilityForW;
