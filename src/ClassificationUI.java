@@ -27,6 +27,8 @@ public class ClassificationUI {
 	private static final String binaryDataSetsFileName = "binaryDataSets.txt";
 	private static final String artificialNaiveBayesFileName = "artificialNaiveBayes.txt";
 	private static final String artificialDependenceFileName = "artificialDependenceTree.txt";
+	private static final String artificialDecisionFileName = "artificialDecisionTree.txt";
+
 
 	
 	//tree
@@ -42,6 +44,8 @@ public class ClassificationUI {
 	// classification types
 	public static String naivebayesianClassificationType = "naive";
 	public static String dependentTreeClassificationType = "dependentTree";
+	public static String decisionTreeClassificationType = "decisionTree";
+
 
 	
 	private static void printDataOptions() {

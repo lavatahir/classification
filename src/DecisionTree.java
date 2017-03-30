@@ -15,7 +15,7 @@ public class DecisionTree extends Classification {
 		this.numberOfClasses = numOfClasses;
 	}
 
-	public void getDecisionTree(List<Sample> samples) {
+	public void getDecisionTree(State state, List<Sample> samples) {
 		entropy = getEntropy(samples);
 		getInformationGain(samples, Integer.MIN_VALUE);
 	}
@@ -60,16 +60,16 @@ public class DecisionTree extends Classification {
 	}
 
 	private double getEntropy(List<Sample> samples) {
-		int[] samplesInClass = new int[numberOfClasses];
+		int[] numberOfSamplesBelongingToClass = new int[numberOfClasses];
 		double entropy = 0;
 		for (Sample s : samples) {
-			samplesInClass[s.getClassNumber() - 1] += 1;
+			numberOfSamplesBelongingToClass[s.getClassNumber() - 1] += 1;
 		}
 
-		for (int i = 0; i < samplesInClass.length; i++) {
-			if (samplesInClass[i] == 0)
+		for (int i = 0; i < numberOfSamplesBelongingToClass.length; i++) {
+			if (numberOfSamplesBelongingToClass[i] == 0)
 				return 0;
-			double probability = 1.0 * samplesInClass[i] / samples.size();
+			double probability = 1.0 * numberOfSamplesBelongingToClass[i] / samples.size();
 			entropy += -1 * probability * (Math.log(probability) / Math.log(2));
 		}
 
