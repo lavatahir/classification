@@ -10,7 +10,6 @@ public class State {
 	
 	private List<Sample> samples;
 	private double[] actualProbabilities;
-	private Feature[] dependentFeatures;
 	
 	public State (int num, int featureLength, double aprioriProbability) {
 		this.num = num;
@@ -18,7 +17,6 @@ public class State {
 		samples = new ArrayList<>();
 		actualProbabilities = new double[featureLength];
 		this.aprioriProbability = aprioriProbability;
-		dependentFeatures = new Feature[featureLength];
 	}
 	
 	public void addActualProbability(int index, double probability) {
@@ -56,18 +54,6 @@ public class State {
 
 	public void setAprioriProbability(double aprioriProbability) {
 		this.aprioriProbability = aprioriProbability;
-	}
-	
-	public void setDepenceProbability(int featureNumber, int dependentFeatureIndex) {
-		dependentFeatures[featureNumber] = new Feature(featureNumber, dependentFeatureIndex);
-	}
-	
-	public double getDependenceTreeProbabilityOfXGivenW(int featureNumber, int index, int dependentIndex) {
-		return dependentFeatures[featureNumber].getProbability(index, dependentIndex);
-	}
-	
-	public Feature getDependenceFeature(int index) {
-		return dependentFeatures[index];
 	}
 
 	public static void main(String[] args) {

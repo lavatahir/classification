@@ -2,32 +2,72 @@ package src;
 
 import java.io.BufferedWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DecisionTree extends Classification {
 
 	private int numberOfFeatures;
 	private int numberOfClasses;
 	private double entropy;
+	Map<Node, List<Node>> tree;
 
 	public DecisionTree(int numOfClasses, int numOfFeatures) {
 		this.numberOfFeatures = numOfFeatures;
 		this.numberOfClasses = numOfClasses;
+		tree = new LinkedHashMap<>();
 	}
 
 	public void getDecisionTree(State state, List<Sample> samples) {
 		entropy = getEntropy(samples);
-		getInformationGain(samples, Integer.MIN_VALUE);
+
+		getInformationGain(samples, getListOfIntegers(), 1);
 	}
 
-	private double getInformationGain(List<Sample> samples, int excludedFeatureIndex) {
+	private List<Integer> getListOfIntegers() {
+		List<Integer> list = new ArrayList<>();
+		for (int i = 0; i < numberOfFeatures; i++) {
+			list.add(new Integer(i));
+		}
+
+		return list;
+	}
+
+	private Node getMajority(List<Sample> samples) {
+		int[] numberOfSamplesBelongingToClass = new int[numberOfClasses];
+
+		for (Sample s : samples) {
+			numberOfSamplesBelongingToClass[s.getClassNumber() - 1] += 1;
+		}
+
+		int maximumSampleInClasses = -1;
+		int maximumClassNumber = -1;
+		for (int i = 0; i < numberOfClasses; i++) {
+			if (numberOfSamplesBelongingToClass[i] > maximumSampleInClasses) {
+				maximumClassNumber = i + 1;
+				maximumSampleInClasses = numberOfSamplesBelongingToClass[i];
+			}
+		}
+
+		return new Node("W" + maximumClassNumber);
+	}
+
+	private Node getInformationGain(List<Sample> samples, List<Integer> features, int currentDepth) {
 		List<Sample> samplesWithMaximumFeatureAsOne = new ArrayList<>();
 		List<Sample> samplesWithMaximumFeatureAsZero = new ArrayList<>();
 		double maximumInfoGain = Double.MIN_VALUE;
 		int maximumFeatureNumber = 0;
 
-		for (int i = 0; i < numberOfFeatures; i++) {
-			if (i != excludedFeatureIndex) {
+		if (getEntropy(samples) == 0) {
+			return new Node("W" + samples.get(0).getClassNumber());
+		}
+		
+		if (features.isEmpty() || currentDepth >= features.size()) {
+			return getMajority(samples);
+		}
+		
+		for (int i : features) {
 				List<Sample> samplesWithFeatureAsOne = new ArrayList<>();
 				List<Sample> samplesWithFeatureAsZero = new ArrayList<>();
 
@@ -52,11 +92,24 @@ public class DecisionTree extends Classification {
 					samplesWithMaximumFeatureAsZero = new ArrayList<>(samplesWithFeatureAsZero);
 					maximumFeatureNumber = i;
 				}
-			}
 		}
-
+		
+		features.remove(maximumFeatureNumber);
+		
+		Node node = new Node(maximumFeatureNumber);
+		
+		if (samplesWithMaximumFeatureAsZero.isEmpty()) {
+			node.addChildren(getMajority(samples));
+		} else {
+			Node nodeWithPathZero = getInformationGain(samples, features, currentDepth + 1);
+			//nodeWithPathZero.
+		}
 		System.out.println("feature " + (maximumFeatureNumber + 1) + " has the maximum gain of " + maximumInfoGain);
-		return 0;
+		return null;
+	}
+
+	private boolean isLeafNode() {
+		return false;
 	}
 
 	private double getEntropy(List<Sample> samples) {
@@ -77,8 +130,7 @@ public class DecisionTree extends Classification {
 	}
 
 	@Override
-	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples, State state,
-			int foldNum) {
+	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples, State state, int foldNum) {
 
 	}
 

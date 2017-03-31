@@ -10,7 +10,13 @@ public class Node {
 	private int num;
 	private List<Node> children;
 	private Node parent;
+	private String decisionClass;
 
+	public Node(String decisionClass) {
+		this.decisionClass = decisionClass;
+	}
+	
+	
 	public Node(int num) {
 		this.num = num;
 		children = new ArrayList<>();
