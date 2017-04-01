@@ -11,7 +11,8 @@ public class DecisionTree extends Classification {
 	private int numberOfFeatures;
 	private int numberOfClasses;
 	private double entropy;
-	Map<Node, List<Node>> tree;
+	private Map<Node, List<Node>> tree;
+	private Node root;
 
 	public DecisionTree(int numOfClasses, int numOfFeatures) {
 		this.numberOfFeatures = numOfFeatures;
@@ -19,10 +20,13 @@ public class DecisionTree extends Classification {
 		tree = new LinkedHashMap<>();
 	}
 
-	public void getDecisionTree(State state, List<Sample> samples) {
+	public Node getDecisionTree(State state, List<Sample> samples) {
 		entropy = getEntropy(samples);
 
-		getInformationGain(samples, getListOfIntegers(), 1);
+		root = getInformationGain(samples, getListOfIntegers(), 1);
+		
+		System.out.println("root is " + root.getNum());
+		return root;
 	}
 
 	private List<Integer> getListOfIntegers() {
@@ -50,7 +54,7 @@ public class DecisionTree extends Classification {
 			}
 		}
 
-		return new Node("W" + maximumClassNumber);
+		return new Node(-1, "W" + maximumClassNumber);
 	}
 
 	private Node getInformationGain(List<Sample> samples, List<Integer> features, int currentDepth) {
@@ -60,7 +64,7 @@ public class DecisionTree extends Classification {
 		int maximumFeatureNumber = 0;
 
 		if (getEntropy(samples) == 0) {
-			return new Node("W" + samples.get(0).getClassNumber());
+			return new Node(-1, "W" + samples.get(0).getClassNumber());
 		}
 		
 		if (features.isEmpty() || currentDepth >= features.size()) {
@@ -94,22 +98,36 @@ public class DecisionTree extends Classification {
 				}
 		}
 		
-		features.remove(maximumFeatureNumber);
+		features.remove(features.indexOf(maximumFeatureNumber));
 		
 		Node node = new Node(maximumFeatureNumber);
 		
 		if (samplesWithMaximumFeatureAsZero.isEmpty()) {
-			node.addChildren(getMajority(samples));
+			Node newNode = getMajority(samples);
+			newNode.setPathNumber(0);
+			newNode.setParent(node);
+			node.addChildren(newNode);
 		} else {
-			Node nodeWithPathZero = getInformationGain(samples, features, currentDepth + 1);
-			//nodeWithPathZero.
+			Node nodeWithPathZero = getInformationGain(samples, new ArrayList<>(features), currentDepth + 1);
+			nodeWithPathZero.setPathNumber(0);
+			nodeWithPathZero.setParent(node);
+			node.addChildren(nodeWithPathZero);
 		}
+		
+		if (samplesWithMaximumFeatureAsOne.isEmpty()) {
+			Node newNode = getMajority(samples);
+			newNode.setPathNumber(1);
+			newNode.setParent(node);
+			node.addChildren(newNode);
+		} else {
+			Node nodeWithPathOne = getInformationGain(samplesWithMaximumFeatureAsOne, new ArrayList<>(features), currentDepth + 1);
+			nodeWithPathOne.setPathNumber(1);
+			nodeWithPathOne.setParent(node);
+			node.addChildren(nodeWithPathOne);
+		}
+		
 		System.out.println("feature " + (maximumFeatureNumber + 1) + " has the maximum gain of " + maximumInfoGain);
-		return null;
-	}
-
-	private boolean isLeafNode() {
-		return false;
+		return node;
 	}
 
 	private double getEntropy(List<Sample> samples) {

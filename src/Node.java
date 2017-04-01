@@ -11,12 +11,14 @@ public class Node {
 	private List<Node> children;
 	private Node parent;
 	private String decisionClass;
+	private int pathNumber;
 
-	public Node(String decisionClass) {
+	public Node(int num, String decisionClass) {
 		this.decisionClass = decisionClass;
+		children = new ArrayList<>();
+		this.num = -1;
 	}
-	
-	
+
 	public Node(int num) {
 		this.num = num;
 		children = new ArrayList<>();
@@ -69,6 +71,30 @@ public class Node {
 		}
 	}
 
+	public void printDecisionTree () {
+		if (num == -1) {
+			System.out.println("Node is " + decisionClass + "and my parent is " + parent.getNum() + " and my pathNumber is " + pathNumber);
+		} else {
+			if (parent == null) {
+				System.out.println("Node is " + num + " and my parent is null and my pathNumber is " + pathNumber);
+
+			} else
+				System.out.println("Node is " + num + " and my parent is " + parent.num + " and my pathNumber is " + pathNumber);
+
+			for (Node n : children) {
+				n.printDecisionTree();
+			}
+		}
+	}
+
+	public int getPathNumber() {
+		return pathNumber;
+	}
+
+	public void setPathNumber(int pathNumber) {
+		this.pathNumber = pathNumber;
+	}
+
 	public boolean equals(Object obj) {
 		if (obj == this)
 			return true;
@@ -80,10 +106,11 @@ public class Node {
 
 		return this.num == node.num;
 	}
-	
+
 	public String toString() {
 		return "N" + num;
 	}
+
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 

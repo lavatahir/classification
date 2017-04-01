@@ -77,7 +77,53 @@ public class TrainingAndTestingClassification {
 
 		printAccuracy(bw);
 	}
+	
+	private List<Sample> getAllTrainingSamplesForDecisionTrees(int division, int i) {
+		ArrayList<Sample> alltrainingSamples = new ArrayList<>();
+		for (State s : classes) {
+			ArrayList<Sample> trainingSamples = new ArrayList<>(
+					s.getSamples());
+			List<Sample> testingSamples = new ArrayList<>(
+					trainingSamples.subList((i - 1) * division, i
+							* division));
+			trainingSamples.subList((i - 1) * division, i * division)
+					.clear();
+			alltrainingSamples.addAll(trainingSamples);
+			
+		}
+		
+		return alltrainingSamples;
+	}
 
+	public void performTrainingAndTestingForDecisionTree(BufferedWriter bw) throws IOException {
+		Classification classification = new DecisionTree(classes.size(), numOfFeatures);
+
+		int division = totalDataNum / numOfCrossValidation;
+
+		for (int i = 1; i <= numOfCrossValidation; i++) {
+			confusionMatrix = new double[ClassificationUI.numOfClasses][ClassificationUI.numOfClasses];
+
+			List<Sample> alltrainingSamples = getAllTrainingSamplesForDecisionTrees(division, i);
+			for (State s : classes) {
+				List<Sample> testingSamples = new ArrayList<>(
+						s.getSamples().subList((i - 1) * division, i
+								* division));
+				classification.trainSamples(bw, alltrainingSamples, s, i - 1);
+				populateConfusionMatrix(testingSamples, s, classification);
+				
+			}
+			
+
+			printConfusionMatrix(bw, "Confusion Matrix For Fold " + i);
+			assignAccuracy(i - 1, division * classes.size());
+
+			classification = new DecisionTree(classes.size(), numOfFeatures);
+
+		}
+
+		printAccuracy(bw);
+	}
+	
 	private Classification getClassificationType(String classificationType) {
 		if (classificationType
 				.equals(ClassificationUI.naivebayesianClassificationType))

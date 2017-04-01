@@ -242,6 +242,20 @@ public class ClassificationUI {
 				tr.performTrainingAndTesting(dependenceTreeFile, ClassificationUI.dependentTreeClassificationType);
 				
 				dependenceTreeFile.close();
+				
+				DecisionTree decisionTree = new DecisionTree(numOfClasses, numofFeatures);
+				
+				List<Sample> allSamples = new ArrayList<>();
+				for (State s : classes)
+					allSamples.addAll(s.getSamples());
+				
+				BufferedWriter decisionTreeFile = new BufferedWriter
+					    (new OutputStreamWriter(new FileOutputStream(artificialDecisionFileName),"UTF-8"));
+				Node tree = decisionTree.getDecisionTree(classes.get(0), allSamples);
+				tree.printDecisionTree();
+				tree.print(decisionTreeFile);
+				
+				decisionTreeFile.close();
 			} else if (input.equals("2")) {
 				createStates();
 			} else if (input.equals("3")) {
