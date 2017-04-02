@@ -26,7 +26,7 @@ public class BayesNetworkClassifier extends Classification{
 	
 	@Override
 	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples,
-			State state, int foldNum) {
+			State state) {
 		for (Node node : dependenceTree.getDependencyTreeNodes()) {
 			assignProbabilityOfFeatureInSamples(trainingSamples, state, node);
 			try {
@@ -65,10 +65,20 @@ public class BayesNetworkClassifier extends Classification{
 		}
 		
 		if (parent == null) {
-			trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 1.0 * childrenSizeIsZeroWhenParentSizeIsZero / samples.size();
+			if(samples.size() == 0) 
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 0;
+			else
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 1.0 * childrenSizeIsZeroWhenParentSizeIsZero / samples.size();
 		} else {
-			trainingEstimates[state.getNum() - 1][node.getNum() - 1][1] = 1.0 * childrenSizeIsZeroWhenParentSizeIsOne / (samples.size()- parentSizeIsZero);
-			trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 1.0 * childrenSizeIsZeroWhenParentSizeIsZero / parentSizeIsZero;
+			if ((samples.size()- parentSizeIsZero) == 0)
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][1] = 0;
+			else
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][1] = 1.0 * childrenSizeIsZeroWhenParentSizeIsOne / (samples.size()- parentSizeIsZero);
+			
+			if (parentSizeIsZero == 0 )
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 0;
+			else
+				trainingEstimates[state.getNum() - 1][node.getNum() - 1][0] = 1.0 * childrenSizeIsZeroWhenParentSizeIsZero / parentSizeIsZero;
 		}
 	}
 	

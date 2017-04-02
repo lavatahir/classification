@@ -9,17 +9,14 @@ import java.util.Set;
 
 public class TrainingAndTestingClassification {
 	private Set<State> classes;
-	private int totalDataNum;
 	private int numOfCrossValidation;
 	private int numOfFeatures;
 	protected double[][] confusionMatrix;
 	protected static double[] accuracy;
 	private DependenceTree dependenceTree;
 
-	public TrainingAndTestingClassification(Set<State> classes,
-			int totalDataNum, int numOfCrossValidation, int numOfFeatures) {
+	public TrainingAndTestingClassification(Set<State> classes, int numOfCrossValidation, int numOfFeatures) {
 		this.classes = classes;
-		this.totalDataNum = totalDataNum;
 		this.numOfCrossValidation = numOfCrossValidation;
 		this.numOfFeatures = numOfFeatures;
 		accuracy = new double[numOfCrossValidation];
@@ -50,26 +47,37 @@ public class TrainingAndTestingClassification {
 		
 		Classification classification = getClassificationType(classificationType);
 
-		int division = totalDataNum / numOfCrossValidation;
 
 		for (int i = 1; i <= numOfCrossValidation; i++) {
 			confusionMatrix = new double[ClassificationUI.numOfClasses][ClassificationUI.numOfClasses];
+            List<List<Sample>> testingSamplesForClasses = new ArrayList<List<Sample>>(ClassificationUI.numOfClasses);
+			int[] totalTestingData = new int[classes.size()];
 
-			for (State s : classes) {
+            for (State s : classes) {
+				int division = s.getSamples().size() / numOfCrossValidation;
+				int start = (i - 1) * division;
+				int end = i* division;
+				
+				if (i == numOfCrossValidation)
+					end = s.getSamples().size();
 				ArrayList<Sample> trainingSamples = new ArrayList<>(
 						s.getSamples());
 				List<Sample> testingSamples = new ArrayList<>(
-						trainingSamples.subList((i - 1) * division, i
-								* division));
-				trainingSamples.subList((i - 1) * division, i * division)
-						.clear();
+						trainingSamples.subList(start, end));
+				trainingSamples.subList(start, end).clear();
 
-				classification.trainSamples(bw, trainingSamples, s, i - 1);
-				populateConfusionMatrix(testingSamples, s, classification);
+				classification.trainSamples(bw, trainingSamples, s);
+				totalTestingData[s.getNum()-1] = testingSamples.size();
+
+				testingSamplesForClasses.add(testingSamples);				
+			}
+			
+			for (State s : classes) {
+				populateConfusionMatrix(testingSamplesForClasses.get(s.getNum()-1), s, classification);
 			}
 
 			printConfusionMatrix(bw, "Confusion Matrix For Fold " + i);
-			assignAccuracy(i - 1, division * classes.size());
+			assignAccuracy(i - 1, totalTestingData);
 
 			classification = getClassificationType(classificationType);
 
@@ -78,15 +86,19 @@ public class TrainingAndTestingClassification {
 		printAccuracy(bw);
 	}
 	
-	private List<Sample> getAllTrainingSamplesForDecisionTrees(int division, int i) {
+	private List<Sample> getAllTrainingSamplesForDecisionTrees(int i) {
 		ArrayList<Sample> alltrainingSamples = new ArrayList<>();
 		for (State s : classes) {
+			int division = s.getSamples().size() / numOfCrossValidation;
+
+			int start = (i - 1) * division;
+			int end = i* division;
+			
+			if (i == numOfCrossValidation)
+				end = s.getSamples().size();
 			ArrayList<Sample> trainingSamples = new ArrayList<>(
 					s.getSamples());
-			List<Sample> testingSamples = new ArrayList<>(
-					trainingSamples.subList((i - 1) * division, i
-							* division));
-			trainingSamples.subList((i - 1) * division, i * division)
+			trainingSamples.subList(start, end)
 					.clear();
 			alltrainingSamples.addAll(trainingSamples);
 			
@@ -98,24 +110,31 @@ public class TrainingAndTestingClassification {
 	public void performTrainingAndTestingForDecisionTree(BufferedWriter bw) throws IOException {
 		Classification classification = new DecisionTree(classes.size(), numOfFeatures);
 
-		int division = totalDataNum / numOfCrossValidation;
 
 		for (int i = 1; i <= numOfCrossValidation; i++) {
 			confusionMatrix = new double[ClassificationUI.numOfClasses][ClassificationUI.numOfClasses];
+			int[] totalTestingData = new int[classes.size()];
+			List<Sample> alltrainingSamples = getAllTrainingSamplesForDecisionTrees(i);
+			classification.trainSamples(bw, alltrainingSamples, classes.iterator().next());
+            int totalNum = 0;
 
-			List<Sample> alltrainingSamples = getAllTrainingSamplesForDecisionTrees(division, i);
 			for (State s : classes) {
-				List<Sample> testingSamples = new ArrayList<>(
-						s.getSamples().subList((i - 1) * division, i
-								* division));
-				classification.trainSamples(bw, alltrainingSamples, s, i - 1);
-				populateConfusionMatrix(testingSamples, s, classification);
+				int division = s.getSamples().size() / numOfCrossValidation;
+				int start = (i - 1) * division;
+				int end = i* division;
 				
+				if (i == numOfCrossValidation)
+					end = s.getSamples().size();
+				List<Sample> testingSamples = new ArrayList<>(
+						s.getSamples().subList(start, end));
+				populateConfusionMatrixForDecisionTree(testingSamples, s, classification);
+				totalNum += s.getSamples().size();
+				totalTestingData[s.getNum()-1] = testingSamples.size();
 			}
 			
 
 			printConfusionMatrix(bw, "Confusion Matrix For Fold " + i);
-			assignAccuracy(i - 1, division * classes.size());
+			assignAccuracy(i - 1, totalTestingData);
 
 			classification = new DecisionTree(classes.size(), numOfFeatures);
 
@@ -124,6 +143,15 @@ public class TrainingAndTestingClassification {
 		printAccuracy(bw);
 	}
 	
+	private void populateConfusionMatrixForDecisionTree(List<Sample> testingSamples,
+			State state, Classification classification) {
+		for (Sample sample : testingSamples) {
+			int indexForRightClass = (int)classification.getProbabilityOfWGivenX(sample, state) - 1;
+
+			confusionMatrix[state.getNum() - 1][indexForRightClass] += 1;
+		}
+	}
+
 	private Classification getClassificationType(String classificationType) {
 		if (classificationType
 				.equals(ClassificationUI.naivebayesianClassificationType))
@@ -166,12 +194,14 @@ public class TrainingAndTestingClassification {
 
 	}
 
-	public void assignAccuracy(int foldNum, int totalNumOfElement) {
+	public void assignAccuracy(int foldNum, int[] totalTestingData) {
+		double sum = 0;
 		for (int i = 0; i < ClassificationUI.numOfClasses; i++) {
-			accuracy[foldNum] += confusionMatrix[i][i];
+			sum += 1.0 * confusionMatrix[i][i] / totalTestingData[i];
 		}
 
-		accuracy[foldNum] = accuracy[foldNum] / totalNumOfElement;
+		
+		accuracy[foldNum] = sum / totalTestingData.length;
 	}
 
 	private void populateConfusionMatrix(List<Sample> testingSamples,
@@ -185,7 +215,7 @@ public class TrainingAndTestingClassification {
 				if (sum > totalProbability) {
 					totalProbability = sum;
 					indexForRightClass = s.getNum() - 1;
-				}
+				} 					
 			}
 
 			confusionMatrix[state.getNum() - 1][indexForRightClass] += 1;

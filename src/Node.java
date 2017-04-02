@@ -12,11 +12,12 @@ public class Node {
 	private Node parent;
 	private String decisionClass;
 	private int pathNumber;
+	private int classNum;
 
-	public Node(int num, String decisionClass) {
-		this.decisionClass = decisionClass;
+	public Node(int num, int classNum) {
+		this.decisionClass = "W" +classNum;
 		children = new ArrayList<>();
-		this.num = -1;
+		this.classNum = classNum;
 	}
 
 	public Node(int num) {
@@ -58,7 +59,7 @@ public class Node {
 
 	private void print(String prefix, boolean isTail, BufferedWriter bw) {
 		try {
-			bw.write("\n" + prefix + (isTail ? "|____ " : "|---- ") + num);
+			bw.write("\n" + prefix + (isTail ? "|____ " : "|---- ") + toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -95,6 +96,14 @@ public class Node {
 		this.pathNumber = pathNumber;
 	}
 
+	public String getDecisionClass() {
+		return decisionClass;
+	}
+
+	public void setDecisionClass(String decisionClass) {
+		this.decisionClass = decisionClass;
+	}
+
 	public boolean equals(Object obj) {
 		if (obj == this)
 			return true;
@@ -107,8 +116,33 @@ public class Node {
 		return this.num == node.num;
 	}
 
+	public Node getChildNode(int pathNum) {
+		for (Node n : children) {
+			if (pathNum == n.getPathNumber() - 1) {
+				return n;
+			}
+		}
+		
+		return null;
+	}
 	public String toString() {
-		return "N" + num;
+		if ((decisionClass == null || decisionClass.isEmpty())) { 
+			if(pathNumber > 0) {
+				return (pathNumber - 1) + " ->  N" + num;
+			}
+			return "N" + num;
+		}
+		
+		return (pathNumber - 1) + " ->  " +decisionClass;
+	}
+	
+
+	public int getClassNum() {
+		return classNum;
+	}
+
+	public void setClassNum(int classNum) {
+		this.classNum = classNum;
 	}
 
 	public static void main(String[] args) {

@@ -40,9 +40,7 @@ public class Edge {
 	}
 
 	public String toString() {
-		DecimalFormat df = new DecimalFormat("#.####");
-
-		return "" + df.format(weight);
+		return "" + (int)weight;
 	}
 
 	public boolean equals(Object obj) {

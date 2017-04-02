@@ -20,7 +20,7 @@ public class NaiveBayesClassifier extends Classification{
 	
 	@Override
 	public void trainSamples(BufferedWriter bw, List<Sample> trainingSamples,
-			State state, int foldNum) {		
+			State state) {		
 			for (int i=0; i<numOfFeatures; i++) {
 				trainingEstimates[state.getNum() - 1][i] = getProbabilityOfFeatureInSamples(trainingSamples, i);
 			}
@@ -40,6 +40,9 @@ public class NaiveBayesClassifier extends Classification{
 			if(sample.getBinaryNumber(featureIndex) == 0)
 				count++;
 		}
+		
+		if (samples.size() == 0)
+			System.out.println("hellow");
 		
 		return 1.0 * count/samples.size();
 	}
