@@ -5,13 +5,11 @@ import java.util.List;
 
 public class State {
 	private int num;
-	private int featureLength;	
 	private List<Sample> samples;
 	private double[] actualProbabilities;
 	
 	public State (int num, int featureLength) {
 		this.num = num;
-		this.featureLength = featureLength;
 		samples = new ArrayList<>();
 		actualProbabilities = new double[featureLength];
 	}

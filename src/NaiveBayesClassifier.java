@@ -9,11 +9,9 @@ public class NaiveBayesClassifier extends Classification{
 	
 	//trainingEstimates[classNumber][featureIndex]
 	private double[][] trainingEstimates;
-	private int numOfClasses;
 	private int numOfFeatures;
 	
 	public NaiveBayesClassifier(int numOfClasses, int numOfFeatures) {
-		this.numOfClasses = numOfClasses;
 		this.numOfFeatures = numOfFeatures;
 		this.trainingEstimates = new double[numOfClasses][numOfFeatures];
 	}

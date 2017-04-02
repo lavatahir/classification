@@ -1,6 +1,5 @@
 package src;
 
-import java.text.DecimalFormat;
 
 public class Edge {
 
@@ -41,6 +40,14 @@ public class Edge {
 
 	public String toString() {
 		return "" + (int)weight;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public boolean equals(Object obj) {

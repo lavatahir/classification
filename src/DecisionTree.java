@@ -1,54 +1,21 @@
 package src;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Paint;
-import java.awt.Stroke;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.JFrame;
-import org.apache.commons.collections15.Transformer;
-
-import cern.colt.Arrays;
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 public class DecisionTree extends Classification {
 
 	private int numberOfFeatures;
 	private int numberOfClasses;
-	private double entropy;
-	private Map<Node, List<Node>> tree;
 	private Node root;
-	private DelegateTree<Node, Edge> treeGUI;
 
 	public DecisionTree(int numOfClasses, int numOfFeatures) {
 		this.numberOfFeatures = numOfFeatures;
 		this.numberOfClasses = numOfClasses;
-		tree = new LinkedHashMap<>();
-		
-		treeGUI = new DelegateTree<>();
-
 	}
 
 	public Node getDecisionTree(State state, List<Sample> samples) {
-		entropy = getEntropy(samples);
-
 		root = getInformationGain(samples, getListOfIntegers(), 1);
 		
 		System.out.println("root is " + root.getNum());

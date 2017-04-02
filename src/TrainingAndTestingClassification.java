@@ -116,7 +116,6 @@ public class TrainingAndTestingClassification {
 			int[] totalTestingData = new int[classes.size()];
 			List<Sample> alltrainingSamples = getAllTrainingSamplesForDecisionTrees(i);
 			classification.trainSamples(bw, alltrainingSamples, classes.iterator().next());
-            int totalNum = 0;
 
 			for (State s : classes) {
 				int division = s.getSamples().size() / numOfCrossValidation;
@@ -128,7 +127,6 @@ public class TrainingAndTestingClassification {
 				List<Sample> testingSamples = new ArrayList<>(
 						s.getSamples().subList(start, end));
 				populateConfusionMatrixForDecisionTree(testingSamples, s, classification);
-				totalNum += s.getSamples().size();
 				totalTestingData[s.getNum()-1] = testingSamples.size();
 			}
 			

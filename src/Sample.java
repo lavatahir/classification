@@ -1,8 +1,5 @@
 package src;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Sample {
 
 	private int[] binaryFeatures;

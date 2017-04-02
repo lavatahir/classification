@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 
@@ -65,7 +64,6 @@ public class DependenceTree {
 		nodes = new ArrayList<>();
 		Stack<Node> newNodes = new Stack<>();
 		List<Edge> visitedEdges = new ArrayList<>();
-		Random rand = new Random();
 
 		if (edges.size() > 0) {
 			root = edges.get(0).getNode1();

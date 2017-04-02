@@ -2,24 +2,16 @@ package src;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class BayesNetworkClassifier extends Classification{
 
-	private int numOfFeatures;
-	private int numOfClasses;
 	private DependenceTree dependenceTree;
 
 	//trainingEstimates[numOfClasses][featureIndex][dependencyNumber]
 	private double[][][] trainingEstimates;
 
 	public BayesNetworkClassifier(int numOfClasses, int numOfFeatures, DependenceTree tree) {
-		this.numOfFeatures = numOfFeatures;
-		this.numOfClasses = numOfClasses;
 		this.trainingEstimates = new double[numOfClasses][numOfFeatures][2];
 		this.dependenceTree = tree;
 	}
